@@ -1,0 +1,113 @@
+#include <xc.h>
+
+#define _XTAL_FREQ 20000000  // 定義系統頻率為20MHz
+
+// 定義引腳
+#define FORWARD_PIN RB4
+#define RIGHT_PIN RB2
+
+// 函數聲明
+void setupPWM();
+void forward();
+void left();
+void right();
+void stop();
+void backward();
+void delay();
+
+void main() {
+    // 清除CCP1CON和CCP2CON寄存器
+    CCP1CON = 0;
+    CCP2CON = 0;
+
+    // 設置PORTB為輸出且初始為低電平
+    TRISB = 0;
+    PORTB = 0;
+
+    // PWM設置
+    setupPWM();
+
+    // 主循環
+    while (1) {
+        forward();
+        delay();
+        right();
+        delay();
+        forward();
+        delay();
+        stop();
+        delay();
+    }
+}
+
+void setupPWM() {
+    // 設置PR2
+    PR2 = 124;
+
+    // 設置CCPR1L和CCPR2L
+    CCPR1L = 62;
+    CCPR2L = 62;
+
+    // 設置TRISC寄存器
+    TRISCbits.TRISC2 = 0;
+    TRISCbits.TRISC1 = 0;
+
+    // 設置T2CON寄存器
+    T2CON = 0x02;
+
+    // 設置CCP1CON和CCP2CON寄存器
+    CCP1CON = 0x0C;
+    CCP2CON = 0x0C;
+
+    // 清除TMR2並啟動TMR2
+    TMR2 = 0;
+    T2CONbits.TMR2ON = 1;
+}
+
+void forward() {
+    FORWARD_PIN = 0;
+    RIGHT_PIN = 0;
+    CCPR1L = 62;
+    CCPR2L = 62;
+}
+
+void left() {
+    FORWARD_PIN = 1;
+    RIGHT_PIN = 0;
+    CCPR1L = 62;
+    CCPR2L = 62;
+}
+
+void right() {
+    FORWARD_PIN = 0;
+    RIGHT_PIN = 1;
+    CCPR1L = 62;
+    CCPR2L = 62;
+}
+
+void stop() {
+    FORWARD_PIN = 0;
+    RIGHT_PIN = 0;
+    CCPR1L = 0;
+    CCPR2L = 0;
+}
+
+void backward() {
+    FORWARD_PIN = 1;
+    RIGHT_PIN = 1;
+    CCPR1L = 62;
+    CCPR2L = 62;
+}
+
+void delay() {
+    for (int i = 0; i < 250; i++) {
+        for (int j = 0; j < 200; j++) {
+            for (int k = 0; k < 50; k++) {
+                __nop(); // NOP指令
+                __nop();
+                __nop();
+                __nop();
+            }
+        }
+    }
+}
